@@ -4,19 +4,22 @@ import webview
 
 from time import time
 
-
+window = None
 class Api:
     def fullscreen(self):
-        webview.windows[0].toggle_fullscreen()
+        window.toggle_fullscreen()
 
     def save_content(self, content):
-        filename = webview.windows[0].create_file_dialog(webview.SAVE_DIALOG)
+        filename = window.create_file_dialog(webview.SAVE_DIALOG)
         if not filename:
             return
 
         with open(filename[0], 'w') as f:
             f.write(content)
 
+    def select_file(self, content):
+        open_file_dialog(window)
+        
     def ls(self):
         return os.listdir('.')
 
@@ -53,16 +56,27 @@ def set_interval(interval):
         return wrapper
     return decorator
 
+def set_state(name, value):
+    if window != None:
+        window.evaluate_js('window.pywebview.state && window.pywebview.state.set_{}("{}")'.format(name,value) )
+
 
 
 entry = get_entrypoint()
 
+
+def open_file_dialog(window):
+    file_types = ('Image Files (*.bmp;*.jpg;*.gif)', 'All files (*.*)')
+
+    result = window.create_file_dialog(
+        webview.OPEN_DIALOG, allow_multiple=True, file_types=file_types
+    )
+    print(result)
+
 @set_interval(1)
 def update_ticker():
-    if len(webview.windows) > 0:
-        webview.windows[0].evaluate_js('window.pywebview.state && window.pywebview.state.set_ticker("%d")' % time())
-
+    set_state('ticker', time())
 
 if __name__ == '__main__':
     window = webview.create_window('pywebview-react boilerplate', entry, js_api=Api())
-    webview.start(update_ticker, debug=True)
+    webview.start(update_ticker, debug=False)

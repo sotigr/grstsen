@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { usePythonApi } from '../../hooks/pythonBridge'
+import { usePythonApi } from '../../hooks/pythonBridge.js'
 
 import styles from './Editor.module.css'
 
